@@ -2,55 +2,55 @@
 
 > Save incoming signal messages as files (for your note-taking system)
 
-This script will parse all incoming messages (and attachments) an create files
+This script will parse all incoming messages (and attachments) and create files
 out of them in a specified location.
 
 My use case is to write notes on my phone, take pictures or record audios that
 then just show up in my note-taking system. All very convieniently through
 signal.
 
-## signal-cli providers, or: What is the difference between the two scripts?
+## What is the difference between the two scripts?
 
-There are two possible ways to interact with signal-cli.
+There are two ways to interact with signal-cli programatically:
 
 - [signal-cli](https://github.com/AsamK/signal-cli) - full functionality, invoke when needed, structured text output
-- [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) - always running, lacks some features, JSON interface
+- [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) - lacks some features, always running, JSON interface
 
-The repo provides script for parsing either of them.
-(I switched to the rest-api, since my local signal-cli broke.)
+The repo provides scripts for parsing either of them.
+(I am using the rest-api, since my local signal-cli broke.)
 
-- [signal-cli version](signal-cli-to-inbox)
-- [signal-cli-rest-api version](signal-api-to-inbox)
+- [script for signal-cli](signal-cli-to-inbox)
+- [script for signal-cli-rest-api](signal-api-to-inbox)
 
 ## About the scripts
 
-They were created for my specific use, so you might not like some of the
+They were created for my specific use case, so you might not like some of the
 opinions.
 
 ### Principles & Quirks
 
 - One message = one file
 - Everything is written to one single "inbox" directory
-- Errors are also written into the output directory (you quickly see if something goes wrong)
+- Errors are also written into that same directory (you can quickly see if something went wrong)
 - In case of naming collision: append instead of overwrite
 - Filenames past 60 characters are shortend
-- A colon (`:`) in the first line of the message to specify the file name
-- If there is a message together with an attachment that will be the title
+- A colon (`:`) in the first line of the message is meant to specify the file name
+- If there an attachment comes with a message the message will be used for the file name
 - Single script file, no dependencies
 
 While the scripts generally work, bugs or some misbehaviors are to be expected.
 
 ### Intended usage
 
-The script is intended to be run via cron (errors written to files as well).
-Nothing stands in the way of triggering manually, you just won't get any output.
+The script is intended to be run via cron (there is no output and errors written to files.)
+But nothing stands in the way always triggering them manually.
 
 ## Setup
 
 The script themselves require the phone number you want to use to be setup in
 the chosen provider.
 
-Then configure some things about your local system.
+And for you to configure some basic options in the script.
 
 ### Setting up your number in signal-cli
 
@@ -58,7 +58,8 @@ Follow the instruction in the respective project:
 - [signal-cli](https://github.com/AsamK/signal-cli?tab=readme-ov-file#usage)
 - [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api?tab=readme-ov-file#getting-started)
 
-My notes for registering with a landline number:
+My quick notes for registering with a landline number (not meant to replace the
+above instructions):
 
 ```sh
 # generate captcha: https://signalcaptchas.org/registration/generate
@@ -84,16 +85,17 @@ curlj POST $API_HOST/v2/send "{number: '$SIGNAL_NUMBER', message: 'Hi from the A
 
 ### Configuring the scripts
 
-The scripts themselves contain option description and examples.
+The scripts themselves contain descriptions and examples for the individual
+options.
 
 ## Tested scenarios
 ### signal-api-to-inbox
 
 I jotted down these cases while building and testing the script:
 
-- Text
+- Text: regular message
 - Text: multi-line
-- Text: only url
+- Text: url only
 - Text: with colon to be used as title
 - Attachment: image
 - Attachment: multiple images
