@@ -91,7 +91,12 @@ async function writeAttachment({id, contentType, name}, title, n) {
   const keepAttachment = keepAllAttachments ? true : false;
 
   let filename = id;
-  let fileExt = id.match(/\..*$/);
+
+  if (name) { // name of the file uploaded to signal
+    filename = name;
+  }
+
+  let fileExt = filename.match(/\..*$/);
   if (!fileExt) {
     fileExt = returnFileExtForContentType( contentType );
     if (!fileExt) {
@@ -103,9 +108,6 @@ async function writeAttachment({id, contentType, name}, title, n) {
     fileExt = fileExt[0];
   }
 
-  if (name) { // name of the file uploaded to signal
-    filename = `${name}${fileExt}`;
-  }
   if (title) { // contents of the connected message
     if (n) fileExt = `-${n}${fileExt}`;
     filename = `${title}${fileExt}`;
