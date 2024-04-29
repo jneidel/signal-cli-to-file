@@ -113,7 +113,7 @@ async function writeAttachment({id, contentType, name}, title, n) {
     filename = `${title}${fileExt}`;
   }
 
-  const attachmentData = await fetchApi( `${apiHost}/v1/attachments/${id}` )
+  const attachmentData = await fetchApi( `/v1/attachments/${id}` )
     .then( r => r.arrayBuffer() )
     .then( r => Buffer.from(r) );
 
