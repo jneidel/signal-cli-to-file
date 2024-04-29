@@ -122,18 +122,24 @@ async function writeAttachment({id, contentType, name}, title, n) {
 fetchApi( `/v1/receive/${signalNumber}?ignore_stories=true` )
   .then( r => r.json() )
   .then( messages => {
-    if (debugging) console.log( JSON.stringify(messages, null, 2) )
-    if (backupMessages && messages) fs.writeFile( path.join(backupDataDir, `messages-${unixTime}`), JSON.stringify(messages, null, 2) )
+    if (debugging) console.log( "Results from /receive:\n" + JSON.stringify(messages, null, 2) )
 
-    messages.map( m => {
-      const { message, attachments: attachArr } = m.envelope.dataMessage;
-      let attachments = (attachArr ? attachArr : []).map( ({id, contentType, filename}) => ({id, contentType, name: filename}) );
-      return { message, attachments };
-    } ).forEach( m => {
-        if (m.attachments.length) {
-          m.attachments.forEach((data, index) => writeAttachment(data, m.message, index))
-        } else {
-          writeNote(m.message);
-        }
-      } )
+    if ( messages?.error )
+      logError(`Error on /receive:
+${messages.error}`).then(() => process.exit(1))
+
+    if (Array.isArray(messages)) {
+      if (backupMessages && messages) fs.writeFile( path.join(backupDataDir, `messages-${unixTime}`), JSON.stringify(messages, null, 2) )
+      messages.map( m => {
+        const { message, attachments: attachArr } = m.envelope.dataMessage;
+        let attachments = (attachArr ? attachArr : []).map( ({id, contentType, filename}) => ({id, contentType, name: filename}) );
+        return { message, attachments };
+      } ).forEach( m => {
+          if (m.attachments.length) {
+            m.attachments.forEach((data, index) => writeAttachment(data, m.message, index))
+          } else {
+            writeNote(m.message);
+          }
+        } )
+    }
   })
