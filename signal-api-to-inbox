@@ -146,11 +146,17 @@ ${messages.error}`).then(() => process.exit(1))
       messages.map( m => {
         const { message, attachments: attachArr } = m.envelope.dataMessage;
         let attachments = (attachArr ? attachArr : []).map( ({id, contentType, filename}) => ({id, contentType, name: filename}) );
+
+        if (!message && !attachments.length) {
+          logError( `Message and attachements are empty for:
+${JSON.stringify(m, null, 2)}` )
+        }
+
         return { message, attachments };
       } ).forEach( m => {
           if (m.attachments.length) {
             m.attachments.forEach((data, index) => writeAttachment(data, m.message, index))
-          } else {
+          } else if (m.message) {
             writeNote(m.message);
           }
         } )
