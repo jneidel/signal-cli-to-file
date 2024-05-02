@@ -85,40 +85,51 @@ function returnFileExtForContentType(ct) {
   switch(ct) {
     case "audio/mpeg":
       return ".aac";
+    case "application/octet-stream":
+      return ".bin";
+    default:
+      logError( `FileExt is empty and contentType of ${contentType} is not being matched for attachement ${id}` );
+      return ".bin";
   }
 }
+
+function isAttachmentALongMessage(name) {
+  // If a message is really long signal will truncate the message and attach the whole thing as an attachment
+  return name.match(/^long-message-.*\.txt/);
+}
+
 async function writeAttachment({id, contentType, name}, title, n) {
-  const keepAttachment = keepAllAttachments ? true : false;
+  // id is a random string given by signal
+  // name is the filename of the file on the uploaders device
+  // title are the contents of an accompanying message, which functions as a title for the file
 
-  let filename = id;
-
-  if (name) { // name of the file uploaded to signal
-    filename = name;
-  }
-
+  let filename = name ? name : id;
   let fileExt = filename.match(/\..*$/);
   if (!fileExt) {
-    fileExt = returnFileExtForContentType( contentType );
-    if (!fileExt) {
-      logError( `FileExt is empty and contentType of ${contentType} is not being matched for attachement ${id}` )
-      keepAttachment = true;
-    }
+    fileExt = returnFileExtForContentType(contentType);
     filename = `${filename}${fileExt}`;
   } else {
     fileExt = fileExt[0];
   }
 
-  if (title) { // contents of the connected message
+  if (title) {
     if (n) fileExt = `-${n}${fileExt}`;
     filename = `${title}${fileExt}`;
   }
 
   const attachmentData = await fetchApi( `/v1/attachments/${id}` )
     .then( r => r.arrayBuffer() )
-    .then( r => Buffer.from(r) );
+    .then( r => Buffer.from(r) )
+    .catch( () => null );
+  if (!attachmentData) return;
 
-  return writeToFile(filename, attachmentData)
-    .then( () => !keepAttachment ? fetchApi( `/v1/attachments/${id}`, { method: "DELETE" } ) : null );
+  let writeFunc = () => writeToFile(filename, attachmentData);
+
+  if (isAttachmentALongMessage(name))
+    writeFunc = () => writeNote(String(attachmentData));
+
+  return writeFunc()
+    .then( () => !keepAllAttachments ? fetchApi( `/v1/attachments/${id}`, { method: "DELETE" } ) : null );
 }
 
 fetchApi( `/v1/receive/${signalNumber}?ignore_stories=true` )
