@@ -30,6 +30,10 @@ const backupMessages = true;
 // Turn on to not delete the attachments on the server after downloading them
 const keepAllAttachments = false;
 
+// Configure at what length filenames should be cut off
+const filenameFromBodyCutoff = 60;
+const filenameFromTitleCutoff = 80;
+
 if (!signalNumber || !inboxDir || !apiHost) {
   console.error("The required configuration variables are not set.")
   process.exit(1);
@@ -67,15 +71,14 @@ function fetchApi(endpoint, options = {}) {
 }
 
 function writeNote(msg) {
-  const filenameCutoff = 60;
   let filename = msg.replaceAll("/", "");
   const firstLineOfFilename = filename.split("\n")[0];
   if (firstLineOfFilename.match(/:/) && ! filename.match(/^http/)) {
-    filename = firstLineOfFilename.match(/(.*):/)[1];
+    filename = firstLineOfFilename.match(/(.*):/)[1].slice(0, filenameFromTitleCutoff);
   } else {
-    filename = filename.replaceAll("\n", " ");
-    if (filename.length > filenameCutoff)
-      filename = filename.slice(0, filenameCutoff) + "…";
+    filename = filename.replaceAll("\n", " ").trim();
+    if (filename.length > filenameFromBodyCutoff)
+      filename = filename.slice(0, filenameFromBodyCutoff) + "…";
   }
 
   if (msg.match(/^http/))
@@ -108,16 +111,17 @@ async function writeAttachment({id, contentType, name}, title, n) {
 
   let filename = name ? name : id;
   let fileExt = filename.match(/\..*$/);
+
   if (!fileExt) {
     fileExt = returnFileExtForContentType(contentType);
-    filename = `${filename}${fileExt}`;
+    filename = `${filename.slice(0, filenameFromBodyCutoff)}${fileExt}`;
   } else {
     fileExt = fileExt[0];
   }
 
   if (title) {
     if (n) fileExt = `-${n}${fileExt}`;
-    filename = `${title}${fileExt}`;
+    filename = `${title.replaceAll("\n", " ").slice(0, filenameFromBodyCutoff).trim()}${fileExt}`;
   }
 
   const attachmentData = await fetchApi( `/v1/attachments/${id}` )
