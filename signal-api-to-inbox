@@ -30,7 +30,11 @@ const backupMessages = true;
 // Turn on to not delete the attachments on the server after downloading them
 const keepAllAttachments = false;
 
-// Configure at what length filenames should be cut off
+// Add the numbers of senders and groups you want to receive messages from
+// If array is non-empty, all messages not from senders or groups in the list will be ignored
+// Format: [ "+49172171717", "nDfe1bpw9GDAm68w/i3VENs6JWqoTtBYm42DY5o3ShY=" ]
+const senderAndGroupWhitelist = [];
+
 const filenameFromBodyCutoff = 60;
 const filenameFromTitleCutoff = 80;
 
@@ -104,6 +108,13 @@ function isAttachmentALongMessage(name) {
   return String(name).match(/^long-message-.*\.txt/);
 }
 
+function deleteAttachment(id) {
+  if (!keepAllAttachments) {
+    if (debugging) console.log( "Deleting remote attachement: ", id );
+    return fetchApi( `/v1/attachments/${id}`, { method: "DELETE" } );
+  }
+}
+
 async function writeAttachment({id, contentType, name}, title, n) {
   // id is a random string given by signal
   // name is the filename of the file on the uploaders device
@@ -136,7 +147,11 @@ async function writeAttachment({id, contentType, name}, title, n) {
     writeFunc = () => writeNote(String(attachmentData));
 
   return writeFunc()
-    .then( () => !keepAllAttachments ? fetchApi( `/v1/attachments/${id}`, { method: "DELETE" } ) : null );
+    .then( () => deleteAttachment(id) );
+}
+
+function getGroupIdOrSenderNumber(envelope) {
+  return envelope?.dataMessage?.groupInfo?.groupId || envelope?.sourceNumber || null;
 }
 
 fetchApi( `/v1/receive/${signalNumber}?ignore_stories=true&send_read_receipts=true` )
@@ -154,17 +169,25 @@ ${messages.error}`).then(() => process.exit(1))
         const message = m.envelope.dataMessage?.message;
         const attachArr = m.envelope.dataMessage?.attachments;
         let attachments = (attachArr ? attachArr : []).map( ({id, contentType, filename}) => ({id, contentType, name: filename}) );
+        const sender = getGroupIdOrSenderNumber(m.envelope);
+
+        if (senderAndGroupWhitelist && !senderAndGroupWhitelist.includes(sender)) {
+          if (debugging) console.log( "Ignoring message from sender or group that is not whitelisted: ", sender );
+          if (attachments) attachments.forEach(a => deleteAttachment(a.id))
+          return
+        }
 
         if (!message && !attachments.length && debugging ) {
           logError( `Message and attachements are empty for:
 ${JSON.stringify(m, null, 2)}` )
+          return
         }
 
         return { message, attachments };
       } ).forEach( m => {
-          if (m.attachments.length) {
+          if (m?.attachments.length) {
             m.attachments.forEach((data, index) => writeAttachment(data, m.message, index))
-          } else if (m.message) {
+          } else if (m?.message) {
             writeNote(m.message);
           }
         } )
