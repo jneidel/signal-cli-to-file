@@ -6,12 +6,14 @@ This script will parse all incoming messages (and attachments) and create files
 out of them in a specified location.
 
 My use case is to write notes on my phone, take pictures or record audios that
-then just show up in my note-taking system. All very convieniently through
+then just show up in my note-taking system. All very conveniently through
 signal.
+
+![Demo](demo.png)
 
 ## What is the difference between the two scripts?
 
-There are two ways to interact with signal-cli programatically:
+There are two ways to interact with signal-cli programmatically:
 
 - [signal-cli](https://github.com/AsamK/signal-cli) - full functionality, invoke when needed, structured text output
 - [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) - lacks some features, always running, JSON interface
@@ -33,9 +35,10 @@ opinions.
 - Everything is written to one single "inbox" directory
 - Errors are also written into that same directory (you can quickly see if something went wrong)
 - In case of naming collision: append instead of overwrite
-- Filenames past 60 characters are shortend
+- Filenames past 60 characters are shortened
 - A colon (`:`) in the first line of the message is meant to specify the file name
 - If there an attachment comes with a message the message will be used for the file name
+- Edits are discarded
 - Single script file, no dependencies
 
 While the scripts generally work, bugs or some misbehaviors are to be expected.
@@ -80,7 +83,7 @@ curlj PUT  $API_HOST/v1/profiles/$SIGNAL_NUMBER "{ name: 'My Bot', base64_avatar
 curlj POST $API_HOST/v2/send "{number: '$SIGNAL_NUMBER', message: 'Hi from the API', recipients: ['YOUR_NUMBER']}"
 ```
 
-- [Captcha explaination](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha)
+- [Captcha explanation](https://github.com/AsamK/signal-cli/wiki/Registration-with-captcha)
 - [curlj script](https://github.com/jneidel/dotfiles/blob/master/scripts/curlj)
 
 ### Configuring the scripts
@@ -102,3 +105,4 @@ I jotted down these cases while building and testing the script:
 - Attachment: audio recording
 - Attachment: pdf where the original file name is used
 - Attachment: with a message to be used as the file name
+- Edit
