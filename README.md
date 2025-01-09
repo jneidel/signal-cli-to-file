@@ -79,7 +79,7 @@ curlj POST $API_HOST/v1/register/$SIGNAL_NUMBER '{use_voice: false, captcha: "CA
 sleep 60s
 curlj POST $API_HOST/v1/register/$SIGNAL_NUMBER '{use_voice: true, captcha: "CAPTCHA"}'
 curlj POST $API_HOST/v1/register/$SIGNAL_NUMBER/verify/TOKEN
-curlj PUT  $API_HOST/v1/profiles/$SIGNAL_NUMBER "{ name: 'My Bot', base64_avatar: '$(cat inbox.png | base64 -w0 -)' }"
+curlj PUT  $API_HOST/v1/profiles/$SIGNAL_NUMBER "{ name: 'My Bot', about: 'Beep boop 🤖. I'm automated.', base64_avatar: '$(cat inbox.png | base64 -w0 -)' }"
 curlj POST $API_HOST/v2/send "{number: '$SIGNAL_NUMBER', message: 'Hi from the API', recipients: ['YOUR_NUMBER']}"
 ```
 
