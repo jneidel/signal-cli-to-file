@@ -1,2 +1,2 @@
 import:
-	cp ~/scripts/cron/signal-to-inbox signal-api-to-inbox
+	cp ~/scripts/personal/signal-to-inbox signal-api-to-inbox
