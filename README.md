@@ -19,10 +19,9 @@ There are two ways to interact with signal-cli programmatically:
 - [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) - lacks some features, always running, JSON interface
 
 The repo provides scripts for parsing either of them.
-(I am using the rest-api, since my local signal-cli broke.)
 
-- [script for signal-cli](signal-cli-to-inbox)
-- [script for signal-cli-rest-api](signal-api-to-inbox)
+- [script for signal-cli-rest-api](signal-api-to-inbox) - actively maintained
+- [script for signal-cli](signal-cli-to-inbox) - provided as is, feel free to submit a fix
 
 ## About the scripts
 
@@ -105,4 +104,5 @@ I jotted down these cases while building and testing the script:
 - Attachment: audio recording
 - Attachment: pdf where the original file name is used
 - Attachment: with a message to be used as the file name
-- Edit
+- Edit message
+- Message from number on whitelist and not on whitelist
