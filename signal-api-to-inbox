@@ -88,6 +88,8 @@ function writeNote(msg) {
   if (msg.match(/^http/))
     msg = `{${msg}}`;
 
+  msg = `${msg}\n`;
+
   return writeToFile( `${filename}.${messageFileExtension}`, msg );
 }
 
